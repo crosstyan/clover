@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.2.8
+- Fixed icons not appearing on console
+- Added command `editor/run-command`
+
 ## 0.2.6
 - Remove Calva's highlight file
 
