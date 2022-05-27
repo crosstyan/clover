@@ -20,7 +20,7 @@
                    :output-dir "lib/js"
                    :output-to "lib/main.js"
                    :devtools {:before-load-async clover.core/before
-                               :after-load clover.core/after}}
+                              :after-load clover.core/after}}
           :browser {:target :browser
                     :asset-path "js"
                     :output-dir "view/js"

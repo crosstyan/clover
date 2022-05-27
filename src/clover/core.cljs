@@ -8,6 +8,7 @@
             [repl-tooling.editor-integration.evaluation :as e-eval]
             [repl-tooling.features.definition :as definition]
             [repl-tooling.editor-helpers :as helpers]
+            [clover.joyride :as joy]
             ["vscode" :as vscode :refer [Location Uri Position Range]]
             ["path" :as path]))
 
@@ -69,39 +70,36 @@
                                            {:scheme "jar" :language "clojure"}
                                            {:scheme "untitled" :language "clojure"}]))
 
-(defn activate [^js ctx]
+(defn ^:export activate [^js ctx]
   (when ctx (reset! ui/curr-dir (.. ctx -extensionPath)))
   (.. vscode -languages
       (setLanguageConfiguration
        "clojure"
        (js->clj
-         {:wordPattern #"[^\s,#()\[\]{};\"\\\@']+"})))
-          ; :onEnterRules  [{:beforeText #".*"
-          ;                  :action {}
-          ;                  :indentAction (.. vscode -IndentAction -Outdent)
-          ;                  :removeText js/Number.MAX_VALUE}]})))
+        {:wordPattern #"[^\s,#()\[\]{};\"\\\@']+"})))
 
   (aux/add-disposable!
-    (.. vscode -tasks (registerTaskProvider "Clover" conn/provider)))
+   (.. vscode -tasks (registerTaskProvider "Clover" conn/provider)))
 
- (aux/add-disposable! (.. vscode -languages
-                          (registerOnTypeFormattingEditProvider document-selector
-                                                                formatter/formatter
-                                                                "\r"
-                                                                "\n")))
+  (aux/add-disposable! (.. vscode -languages
+                           (registerOnTypeFormattingEditProvider document-selector
+                                                                 formatter/formatter
+                                                                 "\r"
+                                                                 "\n")))
 
- (aux/add-disposable! (.. vscode -commands
-                          (registerCommand "clover.connectSocketRepl"
-                                           conn/connect!)))
- (aux/add-disposable! (.. vscode -languages
-                          (registerDefinitionProvider
-                           "clojure"
-                           #js {:provideDefinition var-definition})))
+  (aux/add-disposable! (.. vscode -commands
+                           (registerCommand "clover.connectSocketRepl"
+                                            conn/connect!)))
+  (aux/add-disposable! (.. vscode -languages
+                           (registerDefinitionProvider
+                            "clojure"
+                            #js {:provideDefinition var-definition})))
 
- (aux/add-disposable! (.. vscode -languages
-                          (registerCompletionItemProvider
-                           "clojure"
-                           #js {:provideCompletionItems autocomplete}))))
+  (aux/add-disposable! (.. vscode -languages
+                           (registerCompletionItemProvider
+                            "clojure"
+                            #js {:provideCompletionItems autocomplete})))
+  joy/exports)
 
 (defn deactivate []
   (aux/clear-all!))

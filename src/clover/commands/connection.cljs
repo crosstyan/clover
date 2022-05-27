@@ -188,15 +188,20 @@
         (swap! state/state assoc :old-conn-info txt :old-port port)
         [host port]))))
 
-(defn connect! []
-  (let [nrepl? (.. vscode -workspace (getConfiguration "clover") -detectNreplPort)
-        port (helpers/get-possible-port (folders) nrepl? (:old-port @state/state))
-        conn-info (if port
-                    (str "localhost:" port)
-                    (:old-conn-info @state/state "localhost:"))]
-    (if (state/repl-for-clj)
-      (vs/warn "REPL is already connected")
-      (.. (vs/prompt "Connect to Clojure: inform <host>:<port>"
-                     conn-info)
-          (then extract-host-port)
-          (then #(some-> % connect-clj))))))
+(defn connect!
+  ([host port]
+   (if (state/repl-for-clj)
+     (vs/warn "REPL is already connected")
+     (connect-clj [host port])))
+  ([]
+   (let [nrepl? (.. vscode -workspace (getConfiguration "clover") -detectNreplPort)
+         port (helpers/get-possible-port (folders) nrepl? (:old-port @state/state))
+         conn-info (if port
+                     (str "localhost:" port)
+                     (:old-conn-info @state/state "localhost:"))]
+     (if (state/repl-for-clj)
+       (vs/warn "REPL is already connected")
+       (.. (vs/prompt "Connect to Clojure: inform <host>:<port>"
+                      conn-info)
+           (then extract-host-port)
+           (then #(some-> % connect-clj)))))))
