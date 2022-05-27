@@ -101,7 +101,6 @@
                             #js {:provideCompletionItems autocomplete})))
   joy/exports)
 
-
 (defn deactivate []
   (aux/clear-all!))
 

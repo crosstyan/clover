@@ -127,11 +127,51 @@ To avoid conflicts, this plug-in does not register any keybindings. You can defi
     }
 ```
 
-## Disclaimer:
-This plug-in should be considered "alpha state". Its still in the beginning, and the only reason it works for evaluation, autocomplete, and supports lots of Clojure implementations is because it re-uses most of the code from Chlorine.
+### Integration with Joyride
 
-### Known problems:
-Currently there are some synchronization problems, so sometimes a restart of VSCode is necessary.
+Currently Clover exposes some APIs that can be used with [Joyride](https://github.com/BetterThanTomorrow/joyride). To use it, first get the plug-in exports with the following code:
+
+```clojure
+(let [clover (vscode/extensions.getExtension "mauricioszabo.clover")
+      commands (.-exports clover)]
+  ...your code here...
+  )
+```
+
+The following commands are exposed:
+
+* **get_top_block()** - Gets the topmost block in the current editor considering the cursor position
+* **get_block()** - Gets the current block in the current editor considering the cursor position
+* **get_var()** - Gets the var under the current position
+* **get_selection()** - Gets selected text in the current position
+* **get_namespace()** - Gets the current namespace as a string, considering the current cursor position. For example, if your code have two namespace definitions, one like `(ns name1...)` at line 20, and `(ns name2...)` at line 30, if your cursor is at line 21, it'll return `name1`, and if your cursor is at line 40, it'll return `name2`.
+* **evaluate(code, range)** - Evaluate the current code and returns the result inside a promise. If the evaluation succeeds, result will be returned inside `result`. If it fails, it'll be inside `error`.  Please notice that to run this function a REPL needs to be connected.
+* **evaluate_and_present(code, range)** - Evaluate the current code and shows in the Clover console window. Please notice that to run this function a REPL needs to be connected.
+* **evaluate_interactive(code, range)** - Evaluate the current code and shows in the Clover console window using the interactive renderer. For more information, see [Customize rendering of results](https://gitlab.com/clj-editors/repl-tooling/-/blob/master/doc/extending.md#customize-rendering-of-results). Please notice that to run this function a REPL needs to be connected.
+* **connect_socket(host, port)** - Connects to a socket REPL. If you call without arguments, it'll open a popup window asking for host and port number. If you call with a string and an integer, it'll try to connect to that specific host and port.
+* **disconnect()** - Disconnects the REPL if it's connected.
+* **get_commands()** - Gets all commands that Clover supports. Please notice that to run this function a REPL needs to be connected.
+* **run_command(command, ...args)** - Runs the command, passing arguments if the function allows to (it probably will not). Please notice that to run this function a REPL needs to be connected.
+
+All `get_*` commands return an object containing `.text` and `.range`, containing the currrent text that was detected and the range that the text represents (for example, if you get a block, it'll return the full contents of the block as `.text` and `.range` will be the beginning of the block, and the end of it). The `evaluate_*` commands expect the same object that `.get_*` returns. `get_*` **can return** `null` if a text editor is not selected, or if the current cursor position does not point to the object you're trying to get (for example, if the cursor is on a blank space and you're trying to get the current var, or if the cursor is outside a block and you're trying to get the block).
+
+Finally, `run_command` is kinda internal use only - you can use it to run Clover commands **and** custom commands that you define in the config file (as shown on *Custom Commands* above) so you can use it to script things with a REPL connected exactly the same as you would inside a Clover config file.
+
+**Example** - connect to a socket REPL at port 5555 and run a command, disconnecting after it:
+
+```clojure
+(ns activate
+  (:require [joyride.core :as joyride]
+            ["vscode" :as vscode]
+            [promesa.core :as p]))
+
+(when (= (joyride/invoked-script) joyride/*file*)
+  (p/let [clover (vscode/extensions.getExtension "mauricioszabo.clover")
+          commands (.-exports clover)
+          _ (.connect_socket commands "localhost" 5555)
+          res (.evaluate commands "(+ 1 2)" (clj->js [[0 0] [0 0]]))]
+    (.append (joyride/output-channel) (str "Result is: " (.-result res) "\n"))))
+```
 
 ## Related Projects:
 * [Chlorine](https://github.com/mauricioszabo/atom-chlorine)
