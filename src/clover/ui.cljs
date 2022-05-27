@@ -1,7 +1,6 @@
 (ns clover.ui
   (:require [clojure.edn :as edn]
             [promesa.core :as p]
-            [repl-tooling.editor-helpers :as helpers]
             [repl-tooling.editor-integration.connection :as connection]
             [repl-tooling.eval :as eval]
             [clover.state :as st]
