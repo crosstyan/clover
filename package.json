@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"description": "Socket REPL development for your editor",
 	"publisher": "mauricioszabo",
-	"repository": "https://github.com/mauricioszabo/clover/",
+	"repository": "https://gitlab.com/clj-editors/clover",
 	"version": "0.3.0",
 	"engines": {
 		"vscode": "^1.50.0"
