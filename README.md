@@ -157,6 +157,10 @@ All `get_*` commands return an object containing `.text` and `.range`, containin
 
 Finally, `run_command` is kinda internal use only - you can use it to run Clover commands **and** custom commands that you define in the config file (as shown on *Custom Commands* above) so you can use it to script things with a REPL connected exactly the same as you would inside a Clover config file.
 
+> **WARNING ABOUT `range`:** You **must pass a Javascript** array of arrays. So you either pass `#js [# js [0 1] #js [1 1] ]` or use `clj->js` over the vector in Joyride. Clover _can't detect_, and actually there is no way to detect, if a specific object is a Clojure vector of vectors because of the way ClojureScript to JS compiler works (it renames and minifies variable names, and it's also not deterministic, so the variable names are not the same between compilations, even if we don't change the app in any way). Clover _will detect_ that a range is not valid and it'll add the current editor's range in place, so you can leave it empty if the range is not important.
+>
+> Basically, the `range` serves only a single purpose: to know which namespace the current code will run. On Chlorine, it also defines where it'll render the inline results, but Clover does not have these for now.
+
 **Example** - connect to a socket REPL at port 5555 and run a command, disconnecting after it:
 
 ```clojure
